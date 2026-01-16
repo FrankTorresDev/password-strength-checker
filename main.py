@@ -1,11 +1,18 @@
-import sys
+#check to see if it matches anything in a text file of passwords
+
+
+import argparse
 MIN_LEN = 8
 SPEC_CHARS = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')']
 WEAK_SCORE_MAX = 2
 GOOD_SCORE_MAX = 4
 STRONG_SCORE_MAX = 5
 
-
+parser = argparse.ArgumentParser()
+parser.add_argument("-f", type=str, help="Name of password list file")
+parser.add_argument("-p", type=str, help="Your Password")
+args = parser.parse_args()
+fileName = args.f
 
 def checkMinLen(pswd: str) -> int:
     if len(pswd) < MIN_LEN:
@@ -41,33 +48,38 @@ def checkSpec(pswd: str) -> int:
     return 0
 
 
+def checkInFile(pswd: str, fName: str ) -> bool:
+
+    file = open(fName, 'r')
+    line = file.readline()
+    while line != "":
+        if line.strip() == pswd:
+            file.close()
+            return True
+        line = file.readline()
+
+    file.close()
+    return False
+
+
 
 def main(): 
 
-    minLenFlag = 0
-    upperFlag = 0
-    lowerFlag = 0
-    numFlag = 0
-    specCharFlag = 0
+    flags = {"minLen": 0, "upper": 0, "lower": 0, "num": 0, "specChar": 0}
+    
     finalScore = 0
 
-    password = sys.argv[1]
 
-    minLenFlag = checkMinLen(pswd=password)
-    upperFlag = checkUpperCase(pswd=password)
-    lowerFlag =  checkLowerCase(pswd=password)
-    numFlag = checkNums(pswd=password)
-    specCharFlag = checkSpec(pswd=password)
+    password = args.p
 
-
-    print(f"Upper flag: {upperFlag}")
-    print(f"Lower flag: {lowerFlag}")
-    print(f"Min len flag: {minLenFlag}")
-    print(f"num flag: {numFlag}")
-    print(f"spec char flag: {specCharFlag}")
+    flags['minLen'] = checkMinLen(pswd=password)
+    flags['upper'] = checkUpperCase(pswd=password)
+    flags['lower'] =  checkLowerCase(pswd=password)
+    flags['num'] = checkNums(pswd=password)
+    flags['specChar'] = checkSpec(pswd=password)
 
     
-    finalScore = minLenFlag + upperFlag + lowerFlag + numFlag + specCharFlag
+    finalScore = flags['minLen'] + flags['upper'] + flags['lower'] + flags['num'] + flags['specChar']
 
     if finalScore <= WEAK_SCORE_MAX:
         print("Strength: Weak")
@@ -76,6 +88,11 @@ def main():
     elif finalScore == STRONG_SCORE_MAX:
         print("Strength: Strong")
 
+
+    if checkInFile(pswd=password, fName=fileName):
+        print(f"Your password {password} was found in file {fileName}")
+    else:
+        print(f"Your password {password} was NOT found in file {fileName}")
 
 
 
